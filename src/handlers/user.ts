@@ -1,7 +1,8 @@
-import { comparePasswords, createJWT, hashPassword } from '../modules/auth';
+import { createJWT, hashPassword } from '../modules/auth';
 import prisma from '../modules/db';
+import { Request, Response } from 'express';
 
-export const signUp = async (req, res) => {
+export const signUp = async (req: Request, res: Response) => {
   const hash = await hashPassword(req.body.password);
 
   const user = await prisma.user.create({
@@ -15,19 +16,13 @@ export const signUp = async (req, res) => {
   res.json({ token });
 };
 
-export const signIn = async (req, res) => {
+export const signIn = async (req: Request, res: Response) => {
   const user = await prisma.user.findUnique({
     where: {
       username: req.body.username,
     },
   });
 
-  const isValid = await comparePasswords(req.body.password, user.password);
-  if (!isValid) {
-    res.status(401);
-    res.send('Invalid username or password');
-    return;
-  }
   const token = createJWT(user);
   res.json({ token });
 };
